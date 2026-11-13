@@ -2,7 +2,7 @@
 
 import sys
 
-from calc import equation
+from calc import equation, stats
 from cli import build_parser
 
 
@@ -30,7 +30,40 @@ def handle_solve(args):
     return 0
 
 
-HANDLERS = {"solve": handle_solve}
+def read_numbers(source):
+    """Прочитать не более MAX_COUNT чисел из строк потока."""
+    values = []
+    for line in source:
+        for word in line.split():
+            try:
+                value = float(word)
+            except ValueError:
+                raise ValueError(f"{word} не является числом") from None
+            values.append(value)
+            if len(values) > stats.MAX_COUNT:
+                raise ValueError("количество чисел превышает 20")
+    stats.validate(values)
+    return values
+
+
+def handle_stats(args):
+    """Прочитать файл или stdin и напечатать таблицу показателей."""
+    if args.input is None:
+        values = read_numbers(sys.stdin)
+    else:
+        try:
+            with open(args.input, encoding="utf-8-sig") as source:
+                values = read_numbers(source)
+        except OSError:
+            raise OSError("файл не открывается") from None
+    for label, function, form in stats.REPORT:
+        value = function(values)
+        formatted = "НЕ СУЩЕСТВУЕТ" if value is None else f"{value:{form}}"
+        print(f"{label}: {formatted}")
+    return 0
+
+
+HANDLERS = {"solve": handle_solve, "stats": handle_stats}
 
 
 def main(argv):
