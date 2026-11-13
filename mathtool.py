@@ -1,72 +1,38 @@
-"""Консольное приложение для решения уравнения A*x^2 + B*x + C = 0."""
+"""Консольное приложение mathtool, лабораторная работа 2."""
 
-from calc import equation
 import sys
 
+from calc import equation
+from cli import build_parser
 
-MAX_VALUE = equation.MAX_VALUE
-
-
-# 1. Разбор параметров командной строки
-args = sys.argv[1:]
-
-if len(args) == 0 or args[0] == "--help":
-    print("mathtool — решение уравнений вида A*x^2 + B*x + C = 0")
-    print("Использование:")
-    print("  python mathtool.py                         вывод справки")
-    print("  python mathtool.py --help                  вывод справки")
-    print("  python mathtool.py solve                   ввод коэффициентов с клавиатуры")
-    print("  python mathtool.py solve -a 1 -b -3 -c 2  решение с заданными коэффициентами")
-    print(f"Коэффициенты A, B, C — целые числа, по модулю не превышающие {MAX_VALUE}.")
+parser = build_parser()
+args = parser.parse_args()
+if args.command is None:
+    parser.print_help()
     sys.exit(0)
-
-if args[0] != "solve":
-    print("ОШИБКА: неизвестная команда", file=sys.stderr)
-    sys.exit(1)
-
-
-# 2. Получение коэффициентов и преобразование их в целые числа
 try:
-    if len(args) == 1:
-        A = int(input("Введите A: "))
-        B = int(input("Введите B: "))
-        C = int(input("Введите C: "))
-    elif len(args) == 7:
-        if args[1] != "-a" or args[3] != "-b" or args[5] != "-c":
-            print("ОШИБКА: неизвестный параметр", file=sys.stderr)
-            sys.exit(1)
-
-        A = int(args[2])
-        B = int(args[4])
-        C = int(args[6])
+    if args.command != "solve":
+        raise ValueError("команда пока не реализована")
+    coefficients = (args.a, args.b, args.c)
+    if all(value is None for value in coefficients):
+        try:
+            coefficients = tuple(int(input(f"Введите {name}: ")) for name in "ABC")
+        except ValueError:
+            raise ValueError("коэффициент не является целым числом") from None
+    elif any(value is None for value in coefficients):
+        raise ValueError("укажите все три коэффициента либо ни одного")
+    kind, discriminant, roots = equation.solve(*coefficients)
+    print(f"Уравнение {kind}")
+    if discriminant is not None:
+        print(f"D = {discriminant}")
+    if not roots:
+        print("Действительных корней нет")
+    elif len(roots) == 1:
+        print(f"x = {roots[0]:.3f}")
     else:
-        print("ОШИБКА: неверный набор параметров", file=sys.stderr)
-        sys.exit(1)
-except ValueError:
-    print("ОШИБКА: коэффициент не является целым числом", file=sys.stderr)
-    sys.exit(1)
-
-
-# 3. Проверка допустимого диапазона коэффициентов
-if abs(A) > MAX_VALUE or abs(B) > MAX_VALUE or abs(C) > MAX_VALUE:
-    print(f"ОШИБКА: значение вне допустимого диапазона [{MAX_VALUE*(-1)};{MAX_VALUE}]", file=sys.stderr)
-    sys.exit(1)
-
-
-# 4. Расчёт выполняется в отдельном модуле.
-try:
-    kind, discriminant, roots = equation.solve(A, B, C)
-except ValueError as error:
+        for number, root in enumerate(roots, 1):
+            print(f"x{number} = {root:.3f}")
+except (ValueError, OSError, EOFError) as error:
     print(f"ОШИБКА: {error}", file=sys.stderr)
     sys.exit(1)
-print(f"Уравнение {kind}")
-if discriminant is not None:
-    print(f"D = {discriminant}")
-if not roots:
-    print("Действительных корней нет")
-elif len(roots) == 1:
-    print(f"x = {roots[0]:.3f}")
-else:
-    for number, root in enumerate(roots, 1):
-        print(f"x{number} = {root:.3f}")
 sys.exit(0)
