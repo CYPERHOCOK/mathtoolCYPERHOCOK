@@ -2,7 +2,7 @@
 
 import sys
 
-from calc import equation, series, stats
+from calc import equation, integration, series, stats
 from cli import build_parser
 
 
@@ -77,7 +77,22 @@ def handle_series(args):
     return 0
 
 
-HANDLERS = {"solve": handle_solve, "stats": handle_stats, "series": handle_series}
+def handle_integrate(args):
+    """Проверить пределы и вывести приближённый интеграл."""
+    function, formula, low, high, inclusive = integration.FORMULAS[args.func]
+    integration.validate(args.start, args.end, args.steps, low, high, inclusive)
+    result = integration.integrate(function, args.start, args.end, args.steps)
+    print(formula)
+    print(f"Значение интеграла: {result:.{integration.DIGITS}f}")
+    return 0
+
+
+HANDLERS = {
+    "solve": handle_solve,
+    "stats": handle_stats,
+    "series": handle_series,
+    "integrate": handle_integrate,
+}
 
 
 def main(argv):
@@ -88,8 +103,6 @@ def main(argv):
         parser.print_help()
         return 0
     try:
-        if args.command not in HANDLERS:
-            raise ValueError("команда пока не реализована")
         return HANDLERS[args.command](args)
     except (ValueError, OSError, EOFError) as error:
         print(f"ОШИБКА: {error}", file=sys.stderr)

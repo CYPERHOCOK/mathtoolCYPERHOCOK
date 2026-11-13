@@ -3,6 +3,7 @@
 import argparse
 
 from calc.series import FORMULAS as SERIES_FORMULAS
+from calc.integration import FORMULAS as INTEGRATION_FORMULAS
 
 
 def build_parser():
@@ -23,7 +24,7 @@ def build_parser():
     stopping.add_argument("--terms", type=int, help="Количество слагаемых от 1 до 10000")
     stopping.add_argument("--eps", type=float, help="Точность 0 < eps <= 0.0001")
     integrate = commands.add_parser("integrate", help="Метод левых прямоугольников", allow_abbrev=False)
-    integrate.add_argument("--func", required=True, help="Имя подынтегральной функции")
+    integrate.add_argument("--func", choices=sorted(INTEGRATION_FORMULAS), required=True, help="Имя подынтегральной функции")
     integrate.add_argument("--from", dest="start", type=float, required=True, help="Нижний предел")
     integrate.add_argument("--to", dest="end", type=float, required=True, help="Верхний предел")
     integrate.add_argument("--steps", type=int, required=True, help="Количество шагов от 1 до 100000")
