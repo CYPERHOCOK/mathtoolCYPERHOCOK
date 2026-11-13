@@ -2,6 +2,8 @@
 
 import argparse
 
+from calc.series import FORMULAS as SERIES_FORMULAS
+
 
 def build_parser():
     """Создать разборщик с отдельными параметрами четырёх команд."""
@@ -16,7 +18,7 @@ def build_parser():
     stats = commands.add_parser("stats", help="Показатели последовательности", allow_abbrev=False)
     stats.add_argument("--input", help="Файл UTF-8 с числами, иначе стандартный ввод")
     series = commands.add_parser("series", help="Сумма знакочередующегося ряда", allow_abbrev=False)
-    series.add_argument("--func", required=True, help="Имя ряда")
+    series.add_argument("--func", choices=sorted(SERIES_FORMULAS), required=True, help="Имя ряда")
     stopping = series.add_mutually_exclusive_group(required=True)
     stopping.add_argument("--terms", type=int, help="Количество слагаемых от 1 до 10000")
     stopping.add_argument("--eps", type=float, help="Точность 0 < eps <= 0.0001")

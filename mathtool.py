@@ -2,7 +2,7 @@
 
 import sys
 
-from calc import equation, stats
+from calc import equation, series, stats
 from cli import build_parser
 
 
@@ -63,7 +63,21 @@ def handle_stats(args):
     return 0
 
 
-HANDLERS = {"solve": handle_solve, "stats": handle_stats}
+def handle_series(args):
+    """Посчитать ряд и вывести формулу только после успешного расчёта."""
+    term, formula = series.FORMULAS[args.func]
+    if args.terms is not None:
+        result = series.sum_by_terms(term, args.terms)
+        count = args.terms
+    else:
+        result, count = series.sum_by_eps(term, args.eps)
+    print(formula)
+    print(f"Слагаемых: {count}")
+    print(f"Сумма ряда: {result:.{series.DIGITS}f}")
+    return 0
+
+
+HANDLERS = {"solve": handle_solve, "stats": handle_stats, "series": handle_series}
 
 
 def main(argv):
