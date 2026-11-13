@@ -1,10 +1,10 @@
 """Консольное приложение для решения уравнения A*x^2 + B*x + C = 0."""
 
-import math
+from calc import equation
 import sys
 
 
-MAX_VALUE = 10_000
+MAX_VALUE = equation.MAX_VALUE
 
 
 # 1. Разбор параметров командной строки
@@ -17,7 +17,7 @@ if len(args) == 0 or args[0] == "--help":
     print("  python mathtool.py --help                  вывод справки")
     print("  python mathtool.py solve                   ввод коэффициентов с клавиатуры")
     print("  python mathtool.py solve -a 1 -b -3 -c 2  решение с заданными коэффициентами")
-    print("Коэффициенты A, B, C — целые числа, по модулю не превышающие 10000.")
+    print(f"Коэффициенты A, B, C — целые числа, по модулю не превышающие {MAX_VALUE}.")
     sys.exit(0)
 
 if args[0] != "solve":
@@ -49,33 +49,24 @@ except ValueError:
 
 # 3. Проверка допустимого диапазона коэффициентов
 if abs(A) > MAX_VALUE or abs(B) > MAX_VALUE or abs(C) > MAX_VALUE:
-    print("ОШИБКА: значение вне допустимого диапазона", file=sys.stderr)
+    print(f"ОШИБКА: значение вне допустимого диапазона [{MAX_VALUE*(-1)};{MAX_VALUE}]", file=sys.stderr)
     sys.exit(1)
 
 
-# 4. Определение вида уравнения, решение и вывод результата
-if A == 0:
-    if B != 0:
-        print("Уравнение линейное")
-        x = -C / B
-        print(f"x = {x:.3f}")
-    else:
-        print("ОШИБКА: это не уравнение, неизвестное отсутствует", file=sys.stderr)
-        sys.exit(1)
+# 4. Расчёт выполняется в отдельном модуле.
+try:
+    kind, discriminant, roots = equation.solve(A, B, C)
+except ValueError as error:
+    print(f"ОШИБКА: {error}", file=sys.stderr)
+    sys.exit(1)
+print(f"Уравнение {kind}")
+if discriminant is not None:
+    print(f"D = {discriminant}")
+if not roots:
+    print("Действительных корней нет")
+elif len(roots) == 1:
+    print(f"x = {roots[0]:.3f}")
 else:
-    print("Уравнение квадратное")
-    D = B * B - 4 * A * C
-    print(f"D = {D}")
-
-    if D > 0:
-        x1 = (-B + math.sqrt(D)) / (2 * A)
-        x2 = (-B - math.sqrt(D)) / (2 * A)
-        print(f"x1 = {x1:.3f}")
-        print(f"x2 = {x2:.3f}")
-    elif D == 0:
-        x = -B / (2 * A)
-        print(f"x = {x:.3f}")
-    else:
-        print("Действительных корней нет")
-
+    for number, root in enumerate(roots, 1):
+        print(f"x{number} = {root:.3f}")
 sys.exit(0)
