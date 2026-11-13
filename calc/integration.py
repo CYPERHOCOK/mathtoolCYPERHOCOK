@@ -29,7 +29,10 @@ def validate(start, end, steps, low, high, inclusive):
     if start >= end:
         raise ValueError("начальный предел не меньше конечного")
     for value in (start, end):
-        inside = low <= value <= high if inclusive else low < value < high
+        if inclusive:
+            inside = low <= value <= high
+        else:
+            inside = low < value < high
         if not inside:
             raise ValueError("предел вне промежутка")
     if not 1 <= steps <= MAX_STEPS:
@@ -42,5 +45,7 @@ def integrate(function, start, end, steps):
     result = 0.0
     for index in range(steps):
         value = start + index * width
-        result += function(value) * width
+        height = function(value)
+        area = height * width
+        result += area
     return result

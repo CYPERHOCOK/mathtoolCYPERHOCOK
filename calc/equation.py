@@ -22,7 +22,9 @@ def solve(a, b, c):
     discriminant = b * b - 4 * a * c
     if discriminant > 0:
         root = math.sqrt(discriminant)
-        return "квадратное", discriminant, [(-b + root) / (2 * a), (-b - root) / (2 * a)]
+        x1 = (-b + root) / (2 * a)
+        x2 = (-b - root) / (2 * a)
+        return "квадратное", discriminant, [x1, x2]
     if discriminant == 0:
         return "квадратное", discriminant, [-b / (2 * a)]
     return "квадратное", discriminant, []

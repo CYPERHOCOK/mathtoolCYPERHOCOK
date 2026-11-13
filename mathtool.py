@@ -8,15 +8,22 @@ from cli import build_parser
 
 def handle_solve(args):
     """Получить коэффициенты и вывести решение уравнения."""
-    coefficients = (args.a, args.b, args.c)
-    if all(value is None for value in coefficients):
+    a = args.a
+    b = args.b
+    c = args.c
+
+    # Коэффициенты задаются либо все в команде, либо все с клавиатуры.
+    if a is None and b is None and c is None:
         try:
-            coefficients = tuple(int(input(f"Введите {name}: ")) for name in "ABC")
+            a = int(input("Введите A: "))
+            b = int(input("Введите B: "))
+            c = int(input("Введите C: "))
         except ValueError:
             raise ValueError("коэффициент не является целым числом") from None
-    elif any(value is None for value in coefficients):
+    elif a is None or b is None or c is None:
         raise ValueError("укажите все три коэффициента либо ни одного")
-    kind, discriminant, roots = equation.solve(*coefficients)
+
+    kind, discriminant, roots = equation.solve(a, b, c)
     print(f"Уравнение {kind}")
     if discriminant is not None:
         print(f"D = {discriminant}")
@@ -25,8 +32,8 @@ def handle_solve(args):
     elif len(roots) == 1:
         print(f"x = {roots[0]:.3f}")
     else:
-        for number, root in enumerate(roots, 1):
-            print(f"x{number} = {root:.3f}")
+        print(f"x1 = {roots[0]:.3f}")
+        print(f"x2 = {roots[1]:.3f}")
     return 0
 
 
@@ -58,8 +65,11 @@ def handle_stats(args):
             raise OSError("файл не открывается") from None
     for label, function, form in stats.REPORT:
         value = function(values)
-        formatted = "НЕ СУЩЕСТВУЕТ" if value is None else f"{value:{form}}"
-        print(f"{label}: {formatted}")
+        if value is None:
+            print(f"{label}: НЕ СУЩЕСТВУЕТ")
+        else:
+            # form взят из таблицы: "d" для целого, ".3f" для дробного.
+            print(f"{label}: {value:{form}}")
     return 0
 
 
@@ -103,7 +113,9 @@ def main(argv):
         parser.print_help()
         return 0
     try:
-        return HANDLERS[args.command](args)
+        # Сначала выбираем функцию по имени команды, затем вызываем её.
+        handler = HANDLERS[args.command]
+        return handler(args)
     except (ValueError, OSError, EOFError) as error:
         print(f"ОШИБКА: {error}", file=sys.stderr)
         return 1

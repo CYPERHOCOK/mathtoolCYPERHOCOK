@@ -10,7 +10,9 @@ DIGITS = math.ceil(-math.log10(MAX_EPS))
 
 def sign(number):
     """Вернуть плюс для нечётного номера и минус для чётного."""
-    return 1 if number % 2 else -1
+    if number % 2 == 0:
+        return -1
+    return 1
 
 
 def third(number):
@@ -46,6 +48,7 @@ def sum_by_eps(term, eps):
     result = 0.0
     for number in range(1, MAX_ITERATIONS + 1):
         value = term(number)
+        # Сначала добавляем слагаемое, затем проверяем условие остановки.
         result += value
         if abs(value) < eps:
             return result, number
