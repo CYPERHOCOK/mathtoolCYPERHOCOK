@@ -1,18 +1,13 @@
-"""Консольное приложение mathtool, лабораторная работа 2."""
+"""Точка входа mathtool: ввод, вызов расчётов и вывод результатов."""
 
 import sys
 
 from calc import equation
 from cli import build_parser
 
-parser = build_parser()
-args = parser.parse_args()
-if args.command is None:
-    parser.print_help()
-    sys.exit(0)
-try:
-    if args.command != "solve":
-        raise ValueError("команда пока не реализована")
+
+def handle_solve(args):
+    """Получить коэффициенты и вывести решение уравнения."""
     coefficients = (args.a, args.b, args.c)
     if all(value is None for value in coefficients):
         try:
@@ -32,7 +27,27 @@ try:
     else:
         for number, root in enumerate(roots, 1):
             print(f"x{number} = {root:.3f}")
-except (ValueError, OSError, EOFError) as error:
-    print(f"ОШИБКА: {error}", file=sys.stderr)
-    sys.exit(1)
-sys.exit(0)
+    return 0
+
+
+HANDLERS = {"solve": handle_solve}
+
+
+def main(argv):
+    """Разобрать параметры и вернуть код 0, 1 либо код ошибки argparse 2."""
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    if args.command is None:
+        parser.print_help()
+        return 0
+    try:
+        if args.command not in HANDLERS:
+            raise ValueError("команда пока не реализована")
+        return HANDLERS[args.command](args)
+    except (ValueError, OSError, EOFError) as error:
+        print(f"ОШИБКА: {error}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
